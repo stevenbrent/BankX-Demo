@@ -1,6 +1,9 @@
 body {
   font-family: system-ui, sans-serif;
-  background: #f5f6f8;
+  background-color: #f5f6f8;
+  background-image: url('./assets/money-pattern.svg');
+  background-repeat: repeat;
+  background-size: 320px 320px;
   color: #1d2330;
   margin: 0;
 }
