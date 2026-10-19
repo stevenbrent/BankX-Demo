@@ -1,0 +1,15 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug server (Alloy demo)",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/server/index.js",
+      "cwd": "${workspaceFolder}/server",
+      "runtimeArgs": ["--env-file-if-exists=.env"],
+      "console": "internalConsole",
+      "skipFiles": ["<node_internals>/**"]
+    }
+  ]
+}

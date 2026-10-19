@@ -1,7 +1,7 @@
 import express from 'express';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { submitEvaluation, interpretOutcome } from './alloy.js';
+import { submitEvaluation } from './alloy.js';
 import { normalize, validate } from '../shared/validation.js';
 
 const app = express();
@@ -16,10 +16,10 @@ app.post('/api/apply', async (req, res) => {
 
   try {
     const applicant = normalize(req.body);
-    // Submitted to Alloy for the record, but the demo outcome shown to the applicant is
-    // driven by name_last (see alloy.js) since the sandbox doesn't branch on it itself.
-    await submitEvaluation(applicant);
-    res.json(interpretOutcome(applicant));
+    // In mock mode the outcome is driven by name_last; in real mode it comes from Alloy's
+    // own evaluation.summary.outcome (see alloy.js).
+    const { outcome } = await submitEvaluation(applicant);
+    res.json(outcome);
   } catch (err) {
     // Log details server-side; never forward Alloy errors or raw responses to the browser.
     console.error(err);

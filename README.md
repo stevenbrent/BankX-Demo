@@ -3,7 +3,7 @@
 React (Vite) frontend + Express backend. The browser never talks to Alloy directly:
 
 ```
-Browser form → POST /api/apply (Express) → Alloy /evaluations → outcome mapped → friendly message
+Browser form → POST /api/apply (Express) → Alloy POST /evaluations → GET /evaluations/{token} → outcome mapped → friendly message
 ```
 
 > **Demo only.** This runs against Alloy's sandbox environment and is for demonstration

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import logo from './assets/bank-x-logo.svg';
+import mark from './assets/bank-x-mark.svg';
 import { FIELDS, formatSsn, normalize, validate, validateField } from '../../shared/validation.js';
 
 const Logo = () => <img className="logo" src={logo} alt="Bank X" width="168" height="44" />;
@@ -21,6 +22,12 @@ const SAMPLE_VALUES = {
 };
 const DEFAULT_FORM = { ...Object.fromEntries(FIELDS.map((f) => [f.name, ''])), ...SAMPLE_VALUES };
 const FIELD_BY_NAME = Object.fromEntries(FIELDS.map((f) => [f.name, f]));
+
+// Applied on top of however long the request actually took, so the submit never feels
+// instant (and any unusually fast response doesn't flash by) while still never waiting
+// less than this on a slow network.
+const MIN_SUBMIT_DELAY_MS = 3000;
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export default function App() {
   const [form, setForm] = useState(DEFAULT_FORM);
@@ -54,6 +61,7 @@ export default function App() {
 
     setSubmitting(true);
     setResult(null);
+    const start = Date.now();
     try {
       const res = await fetch('/api/apply', {
         method: 'POST',
@@ -61,6 +69,8 @@ export default function App() {
         body: JSON.stringify(normalize(form)),
       });
       const data = await res.json();
+      const remaining = MIN_SUBMIT_DELAY_MS - (Date.now() - start);
+      if (remaining > 0) await sleep(remaining);
       if (data.errors) setErrors(data.errors);
       setResult(data);
     } catch {
@@ -119,6 +129,12 @@ export default function App() {
         <button type="submit" disabled={submitting}>
           {submitting ? 'Submitting…' : 'Submit application'}
         </button>
+        {submitting && (
+          <div className="spinner-overlay" role="status" aria-live="polite">
+            <img className="spinner" src={mark} alt="" aria-hidden="true" />
+            <span>Verifying your application…</span>
+          </div>
+        )}
       </form>
     </main>
   );

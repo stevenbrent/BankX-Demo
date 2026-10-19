@@ -20,6 +20,7 @@ main {
 form {
   display: grid;
   gap: 14px;
+  position: relative;
 }
 
 label {
@@ -108,6 +109,32 @@ input[aria-invalid='true'] {
   font-size: 13px;
   font-weight: 400;
   color: #5c6475;
+}
+
+.spinner-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  background: rgb(255 255 255 / 0.92);
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #4a5263;
+  text-align: center;
+}
+.spinner {
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  animation: pulse 1.1s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(0.85); opacity: 0.6; }
 }
 
 .logo {
