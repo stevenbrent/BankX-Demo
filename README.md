@@ -20,6 +20,8 @@ npm run dev                          # client: http://localhost:5173, API: :3001
 
 With `ALLOY_MOCK=true`, no Alloy call is made. Use last name `deny` or `review` to see those outcomes; any other name is approved.
 
+With `ALLOY_MOCK=fail`, no Alloy call is made either — instead a bogus evaluation response is fed through the real outcome-parsing logic, which rejects it, to demo the "Something went wrong" error path shown for a malformed or missing outcome from Alloy.
+
 ## Production / single deploy
 
 ```bash

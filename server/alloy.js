@@ -40,6 +40,16 @@ export async function submitEvaluation(applicant) {
     return { evaluation, outcome: interpretOutcome(applicant) };
   }
 
+  // Lets the "outcome missing/malformed" path be demoed on demand, without needing Alloy to
+  // actually misbehave: skips the real call like ALLOY_MOCK=true does, but feeds a bogus
+  // outcome through the real interpretAlloyOutcome below, which throws on anything it doesn't
+  // recognize. That throw is handled exactly like a real API failure (see server/index.js).
+  if (ALLOY_MOCK === 'fail') {
+    console.log('[alloy] ALLOY_MOCK=fail — skipping Alloy API calls, simulating a malformed evaluation response.');
+    const evaluation = mockFailureEvaluation();
+    return { evaluation, outcome: interpretAlloyOutcome(evaluation, applicant) };
+  }
+
   // Our field names already match Alloy's /v1/parameters/ keys 1:1, so no remapping is needed.
   console.log('[alloy] POST /evaluations', redact(applicant));
   const res = await fetch(`${ALLOY_BASE_URL}/evaluations`, {
@@ -92,17 +102,35 @@ function interpretOutcome({ name_first = '', name_last = '' } = {}) {
   return { status, applicantName, message: OUTCOME_MESSAGES[status] };
 }
 
-// Used in real mode: maps Alloy's actual evaluation.summary.outcome ("Approved" / "Denied" /
-// "Manual Review") to the applicant-facing status. Anything unrecognized errs toward manual
-// review rather than silently auto-approving an outcome we don't recognize.
+// Used in real mode: maps Alloy's actual evaluation.summary.outcome to the applicant-facing
+// status. Only the three outcomes Alloy documents are recognized; a missing or unrecognized
+// value means something is wrong with the integration, not a real decision, so this throws
+// rather than guessing — the caller's catch block turns that into the same generic
+// "something went wrong" message already shown for a failed API call, instead of telling the
+// applicant they're under review when we don't actually know what Alloy returned.
+const ALLOY_OUTCOME_STATUS = {
+  approved: 'approved',
+  denied: 'denied',
+  'manual review': 'review',
+};
+
 function interpretAlloyOutcome(evaluation, { name_first = '', name_last = '' } = {}) {
   const applicantName = `${name_first} ${name_last}`.trim();
   const raw = String(evaluation?.summary?.outcome ?? '').trim().toLowerCase();
-  const status = raw === 'approved' ? 'approved' : raw === 'denied' ? 'denied' : 'review';
+  const status = ALLOY_OUTCOME_STATUS[raw];
+  if (!status) {
+    throw new Error(`Alloy returned an unrecognized evaluation outcome: ${JSON.stringify(evaluation?.summary?.outcome ?? null)}`);
+  }
   return { status, applicantName, message: OUTCOME_MESSAGES[status] };
 }
 
 // Stands in for a real Alloy call when ALLOY_MOCK=true.
 function mockEvaluation() {
   return { summary: { outcome: 'Approved' } };
+}
+
+// Stands in for a real Alloy call when ALLOY_MOCK=fail — a response Alloy would never
+// actually send, so it's guaranteed to miss every case in ALLOY_OUTCOME_STATUS below.
+function mockFailureEvaluation() {
+  return { summary: { outcome: 'gibberish' } };
 }

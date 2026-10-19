@@ -104,6 +104,7 @@ export default function App() {
       <p className="instructions">
         Fields marked with <span className="required" aria-hidden="true">*</span> are required.
       </p>
+      {result?.status === 'error' && <p className="result error">{result.message}</p>}
       <form onSubmit={handleSubmit} noValidate>
         {FIELDS.map(({ name, label, optional, hint, uppercase, ...rest }) => (
           <label key={name}>
@@ -125,7 +126,6 @@ export default function App() {
             {errors[name] && <span id={`${name}-error`} className="field-error">{errors[name]}</span>}
           </label>
         ))}
-        {result?.status === 'error' && <p className="result error">{result.message}</p>}
         <button type="submit" disabled={submitting}>
           {submitting ? 'Submitting…' : 'Submit application'}
         </button>
