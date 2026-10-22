@@ -132,5 +132,5 @@ function mockEvaluation() {
 // Stands in for a real Alloy call when ALLOY_MOCK=fail — a response Alloy would never
 // actually send, so it's guaranteed to miss every case in ALLOY_OUTCOME_STATUS below.
 function mockFailureEvaluation() {
-  return { summary: { outcome: 'gibberish' } };
+  return { summary: { outcome: 'THE COMPUTER IS BROKEN' } };
 }
